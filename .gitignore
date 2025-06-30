@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual Environment (created by uv)
+.venv/
+
+# IDE configuration files
+.idea/
+.vscode/
+
+# OS-generated files
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Python-related cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
