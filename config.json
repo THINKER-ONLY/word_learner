@@ -1,5 +1,5 @@
 {
-  "display_interval": 3,
-  "display_mode": "random",
-  "show_chinese": true
-} 
+    "display_interval": 10,
+    "display_mode": "random",
+    "show_chinese": true
+}

@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QPushButton, QMessageBox, QInputDialog, QLineEdit, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QPushButton, QMessageBox, QInputDialog, QLineEdit, QHBoxLayout, QCheckBox
 from PyQt6.QtCore import Qt, QTimer
 
 from src.core.word_manager import WordManager
@@ -51,6 +51,17 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(word_display_container, 1)
 
+        # 添加显示中文的快速切换选项
+        control_layout = QHBoxLayout()
+        
+        self.show_chinese_checkbox = QCheckBox("显示中文")
+        self.show_chinese_checkbox.setChecked(self.settings_manager.get_settings(self.settings_manager.KEY_SHOW_CHINESE))
+        self.show_chinese_checkbox.toggled.connect(self.toggle_chinese_display)
+        control_layout.addWidget(self.show_chinese_checkbox)
+        
+        control_layout.addStretch()  # 添加弹性空间，让复选框左对齐
+        
+        main_layout.addLayout(control_layout)
 
         self.next_button = QPushButton("下一个")
         self.next_button.setStyleSheet("font-size: 16px; padding: 10px;")
@@ -280,3 +291,9 @@ class MainWindow(QMainWindow):
         <p><a href="{project_url}">{project_url}</a></p>
         """
         QMessageBox.about(self, "关于", about_text) 
+
+    def toggle_chinese_display(self, checked):
+        """切换中文显示状态。"""
+        self.settings_manager.set_settings(self.settings_manager.KEY_SHOW_CHINESE, checked)
+        # 只切换当前单词的中文显示状态，不跳转到下一个单词
+        self.translation_label.setVisible(checked) 
