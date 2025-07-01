@@ -2,11 +2,10 @@ import json
 import random
 
 class WordManager:
-    # --- Constants for keys ---
+    # 用于在单词字典中访问各项信息的键
     KEY_WORD = 'word'
     KEY_TRANSLATION = 'translation'
     KEY_POS = 'partOfSpeech'
-    # ---
 
     def __init__(self, filepath):
         """
@@ -16,6 +15,7 @@ class WordManager:
         self.filepath = filepath
         self.words = []
         self.current_index = -1
+        # 脏位 (dirty bit)，用于标记内存中的数据是否被修改但尚未保存
         self.is_dirty = False
         self._load_words()
 
@@ -37,8 +37,6 @@ class WordManager:
         """
         try:
             with open(self.filepath, 'w', encoding='utf-8') as f:
-                # indent=4 使json文件格式化，便于阅读
-                # ensure_ascii=False 确保中文字符能正确写入
                 json.dump(self.words, f, indent=4, ensure_ascii=False)
             self.is_dirty = False
         except IOError as e:
@@ -62,7 +60,6 @@ class WordManager:
         :return: 匹配的单词字典，如果未找到则返回 None。
         """
         if key:
-            # 提供了key，执行精确查找
             for word in self.words:
                 if word.get(key) == value_to_find:
                     return word
@@ -149,14 +146,13 @@ class WordManager:
             print(f"编辑失败: 在库中未找到单词 '{original_word}'。")
             return False
 
-        # 如果要修改英文单词本身，需要确保新单词不会与库中其他单词重复。
+        # 如果要修改英文单词本身，需要确保新单词不会与库中其他单词重复
         new_word = updates.get(self.KEY_WORD)
         if new_word and new_word != original_word:
             if self.find_word(new_word, key=self.KEY_WORD):
                 print(f"编辑失败: 新单词 '{new_word}' 已经存在于库中。")
                 return False
 
-        # 在内存中应用更新
         word_to_edit.update(updates)
         self.is_dirty = True
         return True
