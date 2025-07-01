@@ -1,7 +1,9 @@
 [project]
 name = "word-learner"
 version = "0.1.0"
-description = "Add your description here"
+description = "一个基于PyQt6的桌面单词学习工具"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "PyQt6>=6.0.0"
+]
