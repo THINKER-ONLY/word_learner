@@ -1,12 +1,18 @@
 import json
 
 class SettingsManager:
+    # --- Constants for keys ---
+    KEY_DISPLAY_INTERVAL = "display_interval"
+    KEY_DISPLAY_MODE = "display_mode"
+    KEY_SHOW_CHINESE = "show_chinese"
+    # ---
+
     def __init__(self, filepath):
         self.filepath = filepath
         self.defaults = {
-            "display_interval": 3,
-            "display_mode": "random",
-            "show_chinese": True,
+            self.KEY_DISPLAY_INTERVAL: 3,
+            self.KEY_DISPLAY_MODE: "random",
+            self.KEY_SHOW_CHINESE: True,
         }
         self.settings = {}
         self.load_settings()

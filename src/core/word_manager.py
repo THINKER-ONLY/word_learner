@@ -2,6 +2,12 @@ import json
 import random
 
 class WordManager:
+    # --- Constants for keys ---
+    KEY_WORD = 'word'
+    KEY_TRANSLATION = 'translation'
+    KEY_POS = 'partOfSpeech'
+    # ---
+
     def __init__(self, filepath):
         """
         初始化 WordManager。
@@ -62,7 +68,7 @@ class WordManager:
                     return word
         else:
             for word in self.words:
-                if word.get('word') == value_to_find or word.get('translation') == value_to_find:
+                if word.get(self.KEY_WORD) == value_to_find or word.get(self.KEY_TRANSLATION) == value_to_find:
                     return word
         return None
 
@@ -110,14 +116,14 @@ class WordManager:
         :param part_of_speech: 词性。
         :return: 如果添加成功返回 True，如果单词已存在则返回 False。
         """
-        if self.find_word(word, key='word'):
+        if self.find_word(word, key=self.KEY_WORD):
             print(f"添加失败: 单词 '{word}' 已存在。")
             return False
 
         new_word = {
-            'word': word,
-            'translation': translation,
-            'partOfSpeech': part_of_speech
+            self.KEY_WORD: word,
+            self.KEY_TRANSLATION: translation,
+            self.KEY_POS: part_of_speech
         }
         self.words.append(new_word)
         self.is_dirty = True
@@ -137,16 +143,16 @@ class WordManager:
             print("编辑失败: 'updates' 参数必须是一个字典。")
             return False
 
-        word_to_edit = self.find_word(original_word, key='word')
+        word_to_edit = self.find_word(original_word, key=self.KEY_WORD)
 
         if not word_to_edit:
             print(f"编辑失败: 在库中未找到单词 '{original_word}'。")
             return False
 
         # 如果要修改英文单词本身，需要确保新单词不会与库中其他单词重复。
-        new_word = updates.get('word')
+        new_word = updates.get(self.KEY_WORD)
         if new_word and new_word != original_word:
-            if self.find_word(new_word, key='word'):
+            if self.find_word(new_word, key=self.KEY_WORD):
                 print(f"编辑失败: 新单词 '{new_word}' 已经存在于库中。")
                 return False
 
@@ -162,7 +168,7 @@ class WordManager:
         :return: 如果删除成功返回 True，否则返回 False。
         """
         original_count = len(self.words)
-        self.words = [word for word in self.words if word.get('word') != word_to_delete]
+        self.words = [word for word in self.words if word.get(self.KEY_WORD) != word_to_delete]
         
         if len(self.words) < original_count:
             self.is_dirty = True
