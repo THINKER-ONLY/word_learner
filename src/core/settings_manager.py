@@ -5,7 +5,6 @@ class SettingsManager:
     KEY_DISPLAY_INTERVAL = "display_interval"
     KEY_DISPLAY_MODE = "display_mode"
     KEY_SHOW_CHINESE = "show_chinese"
-    KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
     # ---
 
     def __init__(self, filepath):
@@ -18,7 +17,6 @@ class SettingsManager:
             self.KEY_DISPLAY_INTERVAL: 3,
             self.KEY_DISPLAY_MODE: "random",
             self.KEY_SHOW_CHINESE: True,
-            self.KEY_DEEPSEEK_API_KEY: "",
         }
         self.settings = {}
         self.load_settings()

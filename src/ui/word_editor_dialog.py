@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QDialogButtonBox, QFormLayout, QLabel
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QDialogButtonBox, QFormLayout, QLabel, QApplication
 from src.core.word_manager import WordManager
 
 class WordEditorDialog(QDialog):
@@ -38,6 +38,16 @@ class WordEditorDialog(QDialog):
         # 如果是编辑模式，则使用传入的数据填充输入框
         if self.word_data:
             self._populate_fields()
+        
+        self.center_dialog()
+
+    def center_dialog(self):
+        """将对话框居中显示在屏幕上。"""
+        screen = QApplication.primaryScreen().geometry()
+        dialog_rect = self.frameGeometry()
+        center_point = screen.center()
+        dialog_rect.moveCenter(center_point)
+        self.move(dialog_rect.topLeft())
 
     def _populate_fields(self):
         """使用现有数据填充输入框。"""
