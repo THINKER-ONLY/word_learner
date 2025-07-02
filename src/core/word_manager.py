@@ -17,6 +17,9 @@ class WordManager:
         self.current_index = -1
         # 脏位 (dirty bit)，用于标记内存中的数据是否被修改但尚未保存
         self.is_dirty = False
+        # 历史记录，用于支持"上一个"功能
+        self.history = []
+        self.history_index = -1
         self._load_words()
 
     def _load_words(self):
@@ -76,7 +79,9 @@ class WordManager:
         """
         if not self.words:
             return None
-        return random.choice(self.words)
+        word = random.choice(self.words)
+        self._add_to_history(word)
+        return word
 
     def get_next_word(self):
         """
@@ -90,7 +95,9 @@ class WordManager:
         if self.current_index >= len(self.words):
             self.current_index = 0
         
-        return self.words[self.current_index]
+        word = self.words[self.current_index]
+        self._add_to_history(word)
+        return word
 
     def reset_sequential_index(self):
         """
@@ -98,12 +105,108 @@ class WordManager:
         """
         self.current_index = -1
 
+    def _add_to_history(self, word):
+        """
+        将单词添加到历史记录中。
+        :param word: 要添加的单词字典。
+        """
+        # 如果当前不在历史记录的末尾（用户使用了"上一个"功能），
+        # 则删除当前位置之后的所有历史记录
+        if self.history_index < len(self.history) - 1:
+            self.history = self.history[:self.history_index + 1]
+        
+        # 避免连续重复的单词
+        if not self.history or self.history[-1].get(self.KEY_WORD) != word.get(self.KEY_WORD):
+            self.history.append(word.copy())
+            # 限制历史记录长度，避免内存过度使用
+            if len(self.history) > 100:
+                self.history.pop(0)
+                # 删除第一个元素后，索引位置相对不变，但要确保不超出边界
+                if self.history_index >= len(self.history):
+                    self.history_index = len(self.history) - 1
+            
+        # 更新历史索引到最新位置
+        self.history_index = len(self.history) - 1
+
+    def get_previous_word(self):
+        """
+        获取历史记录中的上一个单词。
+        :return: 上一个单词的字典，如果没有上一个单词则返回 None。
+        """
+        if not self.history or self.history_index <= 0:
+            return None
+        
+        self.history_index -= 1
+        return self.history[self.history_index].copy()
+
+    def has_previous_word(self):
+        """
+        检查是否有上一个单词可用。
+        :return: 如果有上一个单词返回 True，否则返回 False。
+        """
+        return len(self.history) > 0 and self.history_index > 0
+
+    def get_next_history_word(self):
+        """
+        获取历史记录中的下一个单词（用于用户在历史记录中浏览时）。
+        :return: 历史记录中的下一个单词，如果没有则返回 None。
+        """
+        if not self.history or self.history_index >= len(self.history) - 1:
+            return None
+        
+        self.history_index += 1
+        return self.history[self.history_index].copy()
+
+    def has_next_history_word(self):
+        """
+        检查历史记录中是否有下一个单词。
+        :return: 如果有下一个历史单词返回 True，否则返回 False。
+        """
+        return len(self.history) > 0 and self.history_index < len(self.history) - 1
+
+    def is_at_history_end(self):
+        """
+        检查是否在历史记录的末尾。
+        :return: 如果在历史记录末尾返回 True，否则返回 False。
+        """
+        return len(self.history) > 0 and self.history_index == len(self.history) - 1
+
     def get_all_words(self):
         """
         获取当前加载的所有单词。
         :return: 包含所有单词字典的列表。
         """
         return self.words
+
+    def get_history(self):
+        """
+        获取学习历史记录。
+        :return: 包含历史记录的列表，按时间顺序排列（最早的在前）。
+        """
+        return self.history.copy()
+
+    def get_history_info(self):
+        """
+        获取历史记录的统计信息。
+        :return: 包含历史记录统计信息的字典。
+        """
+        if not self.history:
+            return {
+                "total_count": 0,
+                "current_index": -1,
+                "unique_words": 0
+            }
+        
+        # 统计唯一单词数量
+        unique_words = set()
+        for word in self.history:
+            unique_words.add(word.get(self.KEY_WORD, ""))
+        
+        return {
+            "total_count": len(self.history),
+            "current_index": self.history_index,
+            "unique_words": len(unique_words)
+        }
 
     def add_word(self, word, translation, part_of_speech=""):
         """

@@ -1,5 +1,6 @@
 {
     "display_interval": 10,
     "display_mode": "random",
-    "show_chinese": true
+    "show_chinese": true,
+    "deepseek_api_key": "sk-0581ff0ee97f44a9a247b82be6188302"
 }

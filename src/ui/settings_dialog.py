@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox, QFormLayout, QLabel, QSpinBox, QComboBox, QCheckBox
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox, QFormLayout, QLabel, QSpinBox, QComboBox, QCheckBox, QLineEdit
 
 class SettingsDialog(QDialog):
     def __init__(self, settings_manager, parent=None):
@@ -28,9 +28,15 @@ class SettingsDialog(QDialog):
         # Show Chinese Translation
         self.show_chinese_input = QCheckBox("默认显示翻译")
         
+        # DeepSeek API Key
+        self.api_key_input = QLineEdit()
+        self.api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.api_key_input.setPlaceholderText("输入您的DeepSeek API密钥...")
+        
         form_layout.addRow(QLabel("单词显示间隔:"), self.interval_input)
         form_layout.addRow(QLabel("单词显示模式:"), self.mode_input)
         form_layout.addRow(self.show_chinese_input)
+        form_layout.addRow(QLabel("DeepSeek API密钥:"), self.api_key_input)
         
         layout.addLayout(form_layout)
 
@@ -53,11 +59,15 @@ class SettingsDialog(QDialog):
         show_chinese = self.settings_manager.get_settings("show_chinese")
         self.show_chinese_input.setChecked(show_chinese)
         
+        api_key = self.settings_manager.get_settings("deepseek_api_key")
+        self.api_key_input.setText(api_key or "")
+        
     def _save_settings(self):
         """将UI控件中的当前值保存回设置管理器。"""
         self.settings_manager.set_settings("display_interval", self.interval_input.value())
         self.settings_manager.set_settings("display_mode", self.mode_input.currentText())
         self.settings_manager.set_settings("show_chinese", self.show_chinese_input.isChecked())
+        self.settings_manager.set_settings("deepseek_api_key", self.api_key_input.text().strip())
     
     def accept(self):
         """重写默认的 accept 方法，在关闭对话框前先保存设置。"""
