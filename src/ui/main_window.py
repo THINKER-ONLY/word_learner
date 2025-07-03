@@ -1,5 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+主窗口模块
+=========
+
+应用程序的主窗口界面，包含：
+- 单词显示区域
+- 控制按钮
+- 菜单栏
+- 定时器控制
+- 历史记录管理
+
+这是用户与应用程序交互的主要界面。
+"""
+
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QPushButton, QMessageBox, QInputDialog, QLineEdit, QHBoxLayout, QCheckBox, QDialog, QTextEdit, QDialogButtonBox, QApplication
+from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QLabel, 
+                             QPushButton, QMessageBox, QInputDialog, QLineEdit, 
+                             QHBoxLayout, QCheckBox, QDialog, QTextEdit, 
+                             QDialogButtonBox, QApplication)
 from PyQt6.QtCore import Qt, QTimer
 
 from src.core.word_manager import WordManager
@@ -8,23 +26,39 @@ from src.ui.word_editor_dialog import WordEditorDialog
 from src.ui.settings_dialog import SettingsDialog
 
 class MainWindow(QMainWindow):
+    """
+    主窗口类
+    
+    应用程序的主窗口，负责显示单词学习界面，
+    包含单词显示、控制按钮、菜单栏等所有UI组件。
+    """
     def __init__(self):
+        """
+        初始化主窗口
+        
+        设置窗口基本属性、创建所有UI组件、初始化管理器对象、
+        设置信号连接和定时器等。
+        """
         super().__init__()
+        
+        # 设置窗口基本属性
         self.setWindowTitle("背单词小工具")
         self.resize(675, 375)
         self.setMinimumSize(600, 375)
         self.center_window()
 
+        # 初始化管理器对象
         self.settings_manager = SettingsManager("config.json")
         self.word_manager = WordManager("assets/words.json")
-        self.current_word_data = None 
+        self.current_word_data = None  # 当前显示的单词数据
 
-        # 将搜索组件创建为实例变量，以便在多个方法中访问
+        # 创建搜索组件（作为实例变量，以便在多个方法中访问）
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("查找单词...")
-        self.search_input.setMaximumWidth(375) # 限制搜索框最大宽度
+        self.search_input.setMaximumWidth(375)  # 限制搜索框最大宽度
         self.search_button = QPushButton("🔍")
 
+        # 创建菜单栏
         self._create_menu_bar()
 
         central_widget = QWidget()
@@ -103,7 +137,12 @@ class MainWindow(QMainWindow):
         self.resizeEvent(None)
 
     def center_window(self):
-        """将窗口居中显示在屏幕上。"""
+        """
+        将窗口居中显示在屏幕上
+        
+        获取屏幕的几何信息，计算窗口应该放置的位置，
+        使窗口在屏幕中央显示。
+        """
         screen = QApplication.primaryScreen().geometry()
         window = self.frameGeometry()
         center_point = screen.center()
@@ -111,7 +150,12 @@ class MainWindow(QMainWindow):
         self.move(window.topLeft())
 
     def center_dialog(self, dialog):
-        """将对话框居中显示在屏幕上。"""
+        """
+        将对话框居中显示在屏幕上
+        
+        Args:
+            dialog: 要居中显示的对话框对象
+        """
         screen = QApplication.primaryScreen().geometry()
         dialog_rect = dialog.frameGeometry()
         center_point = screen.center()
@@ -119,34 +163,56 @@ class MainWindow(QMainWindow):
         dialog.move(dialog_rect.topLeft()) 
 
     def resizeEvent(self, event):
-        """Handle window resize to make fonts responsive."""
-
+        """
+        处理窗口大小调整事件
+        
+        当窗口大小改变时，自动调整字体大小以保持良好的显示效果。
+        字体大小根据窗口高度按比例缩放。
+        
+        Args:
+            event: 窗口大小调整事件对象
+        """
+        # 根据窗口高度计算字体大小
         base_height = self.height()
-        word_font_size = max(18, int(base_height / 7))
-        pos_font_size = max(12, int(base_height / 14))
-        translation_font_size = max(14, int(base_height / 10))
+        word_font_size = max(18, int(base_height / 7))        # 单词字体
+        pos_font_size = max(12, int(base_height / 14))        # 词性字体
+        translation_font_size = max(14, int(base_height / 10)) # 翻译字体
 
+        # 设置单词字体大小
         font_word = self.word_label.font()
         font_word.setPointSize(word_font_size)
         self.word_label.setFont(font_word)
 
+        # 设置词性字体大小
         font_pos = self.pos_label.font()
         font_pos.setPointSize(pos_font_size)
         self.pos_label.setFont(font_pos)
 
+        # 设置翻译字体大小
         font_translation = self.translation_label.font()
         font_translation.setPointSize(translation_font_size)
         self.translation_label.setFont(font_translation)
         
+        # 调用父类的 resizeEvent 方法
         if event:
             super().resizeEvent(event)
 
     def show_next_word_and_reset_timer(self):
-        """显示一个新单词，并根据配置重置定时器。"""
+        """
+        显示新单词并重置定时器
+        
+        这是一个组合方法，它会：
+        1. 显示下一个单词
+        2. 更新按钮状态
+        3. 根据设置重置自动切换定时器
+        4. 启动倒计时显示
+        """
         self.show_next_word()
         self.update_button_states()  # 更新按钮状态
 
+        # 获取显示间隔设置
         interval_seconds = self.settings_manager.get_settings(self.settings_manager.KEY_DISPLAY_INTERVAL)
+        
         if interval_seconds > 0:
             # 停止之前的定时器
             self.timer.stop()
@@ -160,19 +226,26 @@ class MainWindow(QMainWindow):
             # 如果设置为0（不自动切换），停止所有定时器并隐藏倒计时
             self.timer.stop()
             self.countdown_timer.stop()
-            self.countdown_label.setText("⏱️ --")  
+            self.countdown_label.setText("⏱️ --")
 
     def show_next_word(self):
-        """根据设置获取并显示下一个单词。"""
-
+        """
+        根据设置获取并显示下一个单词
+        
+        根据当前的显示模式（随机/顺序）获取单词，
+        并根据中文显示设置控制翻译的可见性。
+        """
+        # 获取显示模式和中文显示设置
         display_mode = self.settings_manager.get_settings(self.settings_manager.KEY_DISPLAY_MODE)
         show_chinese = self.settings_manager.get_settings(self.settings_manager.KEY_SHOW_CHINESE)
 
+        # 根据显示模式获取单词
         if display_mode == 'random':
             self.current_word_data = self.word_manager.get_random_word()
         else:
             self.current_word_data = self.word_manager.get_next_word()
 
+        # 显示单词数据
         if self.current_word_data:
             self._set_display(
                 self.current_word_data.get(self.word_manager.KEY_WORD, "错误"),
@@ -180,13 +253,24 @@ class MainWindow(QMainWindow):
                 self.current_word_data.get(self.word_manager.KEY_POS, "")
             )
         else:
+            # 没有单词时显示提示信息
             self._set_display("没有单词", "请先添加单词。", "")
-            self.timer.stop() 
+            self.timer.stop()
 
+        # 根据设置控制中文翻译的显示
         self.translation_label.setVisible(show_chinese)
 
     def _set_display(self, word, translation, pos):
-        """辅助方法：设置单词、翻译和词性标签的文本。"""
+        """
+        设置单词显示内容
+        
+        这是一个辅助方法，用于设置单词、翻译和词性标签的文本。
+        
+        Args:
+            word (str): 英文单词
+            translation (str): 中文翻译
+            pos (str): 词性
+        """
         self.word_label.setText(word)
         self.pos_label.setText(pos)
         self.translation_label.setText(translation)

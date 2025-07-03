@@ -1,42 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+单词管理器模块
+=============
+
+负责管理单词数据的核心模块，包括：
+- 单词的加载和保存
+- 随机/顺序获取单词
+- 单词的增删改查
+- 学习历史记录管理
+
+单词数据以 JSON 格式存储，支持英文单词、中文翻译和词性信息。
+"""
+
 import json
 import random
 
 class WordManager:
-    # 用于在单词字典中访问各项信息的键
-    KEY_WORD = 'word'
-    KEY_TRANSLATION = 'translation'
-    KEY_POS = 'partOfSpeech'
+    """
+    单词管理器
+    
+    负责管理单词数据的核心类，提供单词的存储、检索、
+    随机/顺序播放以及历史记录等功能。
+    """
+    
+    # 单词字典中的键名常量
+    KEY_WORD = 'word'                # 英文单词
+    KEY_TRANSLATION = 'translation'  # 中文翻译
+    KEY_POS = 'partOfSpeech'         # 词性
 
     def __init__(self, filepath):
         """
-        初始化 WordManager。
-        :param filepath: words.json 文件的路径。
+        初始化单词管理器
+        
+        Args:
+            filepath (str): 单词数据文件的路径，通常是 words.json
         """
         self.filepath = filepath
-        self.words = []
-        self.current_index = -1
-        # 脏位 (dirty bit)，用于标记内存中的数据是否被修改但尚未保存
+        self.words = []                # 所有单词列表
+        self.current_index = -1        # 当前顺序播放索引
+        
+        # 脏位标记，用于标记内存中的数据是否被修改但尚未保存
         self.is_dirty = False
+        
         # 历史记录，用于支持"上一个"功能
-        self.history = []
-        self.history_index = -1
+        self.history = []              # 历史记录列表
+        self.history_index = -1        # 历史记录索引
+        
+        # 加载单词数据
         self._load_words()
 
     def _load_words(self):
         """
-        从 JSON 文件加载单词列表。
-        如果文件不存在或内容损坏，则会创建一个空的列表，并尝试写入一个空的json文件。
+        从单词数据文件加载单词列表
+        
+        如果文件不存在或内容损坏，则会创建一个空的列表，
+        并尝试创建一个空的 JSON 文件。
         """
         try:
             with open(self.filepath, 'r', encoding='utf-8') as f:
                 self.words = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
+            # 文件不存在或格式错误时创建空列表
             self.words = []
             self._save_words()
 
     def _save_words(self):
         """
-        将当前的单词列表保存回 JSON 文件。
+        将当前的单词列表保存到 JSON 文件
+        
+        使用 UTF-8 编码保存，确保中文字符正确显示。
+        保存成功后会清除脏位标记。
         """
         try:
             with open(self.filepath, 'w', encoding='utf-8') as f:
@@ -47,53 +80,77 @@ class WordManager:
 
     def save_changes(self):
         """
-        如果数据发生过修改 (is_dirty 为 True)，则将其保存到文件。
-        这是一个公共方法，提供给外部调用者 (例如UI层) 在适当时机保存。
+        保存数据更改到文件
+        
+        这是一个公共方法，只有当数据被修改时（is_dirty 为 True）
+        才会执行保存操作。通常在程序退出时调用。
         """
         if self.is_dirty:
             self._save_words()
 
     def find_word(self, value_to_find, key=None):
         """
-        灵活查找单词。
-        - 如果提供了 key (如 'word' 或 'translation')，则进行精确的键值匹配。
-        - 如果未提供 key，则默认在 'word' 和 'translation' 两个字段中查找。
-        :param value_to_find: 要查找的值 (英文或中文)。
-        :param key: (可选) 要匹配的键, 例如 'word' 或 'translation'。
-        :return: 匹配的单词字典，如果未找到则返回 None。
+        灵活查找单词
+        
+        支持两种查找模式：
+        1. 指定键名查找：在指定的字段中进行精确匹配
+        2. 模糊查找：在英文单词和中文翻译字段中查找
+        
+        Args:
+            value_to_find (str): 要查找的值（英文或中文）
+            key (str, optional): 要匹配的键名，如 'word' 或 'translation'
+            
+        Returns:
+            dict: 匹配的单词字典，如果未找到则返回 None
         """
         if key:
+            # 在指定字段中查找
             for word in self.words:
                 if word.get(key) == value_to_find:
                     return word
         else:
+            # 在英文单词和中文翻译字段中查找
             for word in self.words:
-                if word.get(self.KEY_WORD) == value_to_find or word.get(self.KEY_TRANSLATION) == value_to_find:
+                if (word.get(self.KEY_WORD) == value_to_find or 
+                    word.get(self.KEY_TRANSLATION) == value_to_find):
                     return word
         return None
 
     def get_random_word(self):
         """
-        从单词库中随机返回一个单词。
-        :return: 一个随机的单词字典，如果库为空则返回 None。
+        从单词库中随机获取一个单词
+        
+        随机选择一个单词并将其添加到历史记录中。
+        适用于随机学习模式。
+        
+        Returns:
+            dict: 随机选择的单词字典，如果单词库为空则返回 None
         """
         if not self.words:
             return None
+            
+        # 随机选择一个单词
         word = random.choice(self.words)
         self._add_to_history(word)
         return word
 
     def get_next_word(self):
         """
-        按顺序获取下一个单词，到达末尾时会循环到开头。
-        :return: 下一个单词的字典，如果库为空则返回 None。
+        按顺序获取下一个单词
+        
+        按照单词列表的顺序依次获取单词，到达末尾时会循环到开头。
+        适用于顺序学习模式。
+        
+        Returns:
+            dict: 下一个单词的字典，如果单词库为空则返回 None
         """
         if not self.words:
             return None
         
+        # 移动到下一个索引
         self.current_index += 1
         if self.current_index >= len(self.words):
-            self.current_index = 0
+            self.current_index = 0  # 循环到开头
         
         word = self.words[self.current_index]
         self._add_to_history(word)
@@ -101,7 +158,10 @@ class WordManager:
 
     def reset_sequential_index(self):
         """
-        重置顺序播放的索引，下次调用 get_next_word 将从头开始。
+        重置顺序播放的索引
+        
+        将当前索引重置为 -1，下次调用 get_next_word() 
+        将从列表的第一个单词开始。
         """
         self.current_index = -1
 

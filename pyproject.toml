@@ -1,3 +1,6 @@
+# Word Learner 项目配置文件
+# 基于 PyQt6 的桌面单词学习工具
+
 [project]
 name = "word-learner"
 version = "0.1.0"
@@ -5,6 +8,6 @@ description = "一个基于PyQt6的桌面单词学习工具"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "cx-freeze>=8.3.0",
-    "PyQt6>=6.0.0",
+    "cx-freeze>=8.3.0",  # 用于打包成可执行文件
+    "PyQt6>=6.0.0",      # Qt6 GUI框架，用于创建桌面应用界面
 ]
