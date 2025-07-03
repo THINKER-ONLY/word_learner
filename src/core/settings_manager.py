@@ -29,7 +29,6 @@ class SettingsManager:
         try:
             with open(self.filepath, 'r', encoding='utf-8') as f:
                 user_settings = json.load(f)
-            # 使用默认设置填充用户设置中缺失的键，确保配置的完整性
             self.settings = {**self.defaults, **user_settings}
         except (FileNotFoundError, json.JSONDecodeError):
             self.settings = self.defaults.copy()

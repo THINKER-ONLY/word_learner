@@ -518,9 +518,7 @@ class MainWindow(QMainWindow):
 
     def show_next_word_smart(self):
         """智能显示下一个单词：优先从历史记录中获取，否则生成新单词。"""
-        # 如果用户在历史记录中浏览，且历史记录中有下一个单词
         if self.word_manager.has_next_history_word():
-            # 从历史记录中获取下一个单词，不重启计时器
             next_word = self.word_manager.get_next_history_word()
             if next_word:
                 self.current_word_data = next_word
@@ -534,7 +532,6 @@ class MainWindow(QMainWindow):
                 
                 self.translation_label.setVisible(show_chinese)
                 
-                # 如果回到了历史记录的末尾，可以重新启动计时器
                 if self.word_manager.is_at_history_end():
                     interval_seconds = self.settings_manager.get_settings(self.settings_manager.KEY_DISPLAY_INTERVAL)
                     if interval_seconds > 0:
@@ -546,10 +543,8 @@ class MainWindow(QMainWindow):
                     else:
                         self.countdown_label.setText("⏱️ --")
                 else:
-                    # 仍在历史记录中，保持计时器停止状态
                     self.countdown_label.setText("⏱️ --")
         else:
-            # 没有历史记录中的下一个单词，生成新单词并重启计时器
             self.show_next_word_and_reset_timer()
         
         self.update_button_states()

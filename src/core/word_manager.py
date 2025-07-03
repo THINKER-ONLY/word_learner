@@ -110,22 +110,16 @@ class WordManager:
         将单词添加到历史记录中。
         :param word: 要添加的单词字典。
         """
-        # 如果当前不在历史记录的末尾（用户使用了"上一个"功能），
-        # 则删除当前位置之后的所有历史记录
         if self.history_index < len(self.history) - 1:
             self.history = self.history[:self.history_index + 1]
         
-        # 避免连续重复的单词
         if not self.history or self.history[-1].get(self.KEY_WORD) != word.get(self.KEY_WORD):
             self.history.append(word.copy())
-            # 限制历史记录长度，避免内存过度使用
             if len(self.history) > 100:
                 self.history.pop(0)
-                # 删除第一个元素后，索引位置相对不变，但要确保不超出边界
                 if self.history_index >= len(self.history):
                     self.history_index = len(self.history) - 1
             
-        # 更新历史索引到最新位置
         self.history_index = len(self.history) - 1
 
     def get_previous_word(self):
@@ -249,7 +243,6 @@ class WordManager:
             print(f"编辑失败: 在库中未找到单词 '{original_word}'。")
             return False
 
-        # 如果要修改英文单词本身，需要确保新单词不会与库中其他单词重复
         new_word = updates.get(self.KEY_WORD)
         if new_word and new_word != original_word:
             if self.find_word(new_word, key=self.KEY_WORD):
